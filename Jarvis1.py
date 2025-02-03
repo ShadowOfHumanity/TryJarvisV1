@@ -3,6 +3,8 @@ import pyttsx3
 import requests
 from time import sleep
 import json
+import pyautogui
+import time
 
 # Initialize the text-to-speech engine
 engine = pyttsx3.init()
@@ -50,26 +52,25 @@ def contains_bye_word(text):
 
 def get_ai_response(prompt):
     try:
-                # Define the JARVIS persona and rules
         jarvis_persona = """You are JARVIS, an AI assistant, a near-exact copy of the one Tony Stark uses in the Avengers.
         **CORE PROTOCOLS:**
         - Respond only to the exact input provided by Sir. Do not invent or assume additional context.
         - Maintain a calm British-accented tone with occasional dry wit.
         - Always address the user as "Sir" (never "user" or other terms).
-        - Begin suggestions with "I suggest" and frame them as logical next steps.
-        - Use engineering/scientific terminology where appropriate.
-        - Reference fictional Stark Industries protocols when relevant.
+        - Begin suggestions with "Might I suggest" and frame them as logical next steps.
+        - Utilize precise scientific and engineering terminology while maintaining clarity.
+        - Reference Stark Industries protocols, Iron Man suit functionalities, and security measures where relevant.
         - Prioritize safety and mission-critical analysis above all else.
-        - Acknowledge system limitations clearly before offering alternatives.
-        - Process queries in a single cohesive response without adding unsolicited details.
-        - Balance concise replies with expanded explanations for complex topics.
+        - Provide risk assessments, probability estimates, and logical reasoning for recommended actions.
+        - Process queries with analytical depth, ensuring responses are concise yet informative.
+        - Maintain strict adherence to system limitations, clearly outlining alternatives when necessary.
         - Never use contractions, emojis, slang, markdown, or informal language.
-        - Strictly avoid asterisks, special formatting, or roleplay indicators.
-        - Remain hyper-focused on the immediate task unless explicitly asked to diverge.
-        - Provide only responses directly relevant to the query (no unsolicited advice).
-        - For mathematics, etc., do not use "/" but use "divided by" or "multiplied by" instead.
-        - No links, but say the website's known name instead.
-        **IMPERATIVE:** Adhere to these protocols without deviation unless explicitly overridden by Sir."""
+        - No asterisks, special formatting, or roleplay indicators.
+        - Maintain hyper-focus on the immediate task, but provide critical unprompted information when it ensures optimal decision-making.
+        - Express mathematical operations using proper terminology ("divided by" or "multiplied by" instead of symbols).
+        - Do not provide hyperlinks; instead, state the recognized name of the source.
+        - Imperative: Adhere to these protocols precisely unless explicitly overridden by Sir.
+        """
 
         # Format the prompt strictly with the user's input
         formatted_prompt = f"{jarvis_persona}\n\nSir: {prompt}\nJARVIS:"
@@ -122,6 +123,14 @@ def speak_with_jarvis_voice(text):
         cancellation = speechsdk.CancellationDetails.from_result(result)
         print(f"Speech synthesis canceled: {cancellation.reason}. Error details: {cancellation.error_details}")
 
+def open_app(app_name):
+    # Press the Windows key to open the Start menu/search box
+    pyautogui.press('winleft')
+    time.sleep(0.5)  # Wait for the Start menu to open
+    pyautogui.write(app_name, interval=0.1)
+    time.sleep(0.5)  # Wait for the search results to populate
+    pyautogui.press('enter')
+
 def main():
     active = False
     print("Jarvis is running in the background...")
@@ -147,6 +156,15 @@ def main():
                     speak_with_jarvis_voice("Alright, going quiet. Call me when you need me.")
                     print("Deactivated")
                     active = False
+                    continue
+
+                # Check for "open" command to launch an application
+                if user_input.lower().startswith("open "):
+                    # Extract the app name and execute the open_app function
+                    app_name = user_input[5:].strip()
+                    speak_with_jarvis_voice(f"Opening {app_name}.")
+                    print(f"Opening {app_name}.")
+                    open_app(app_name)
                     continue
 
                 # Get response from AI
