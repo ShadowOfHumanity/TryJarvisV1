@@ -6,13 +6,12 @@ import json
 import pyautogui
 import time
 
-# Initialize the text-to-speech engine
 engine = pyttsx3.init()
 
 
 
 # Hugging Face API configuration
-HUGGING_FACE_API_TOKEN = "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"  # Replace with your token
+HUGGING_FACE_API_TOKEN = ""  
 API_URL = "https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1"
 headers = {"Authorization": f"Bearer {HUGGING_FACE_API_TOKEN}"}
 
@@ -20,7 +19,7 @@ def listen_for_audio(prompt=None):
     print("Listening... (Speaking indicator: →)")
     
     # Azure Speech Service configuration
-    speech_key = "6kYM1HomXIxX3t7SUdVGi70yJpxAts08M8E4feyGwns4ZlabpeS8JQQJ99BBAC5RqLJXJ3w3AAAYACOG2fVs"
+    speech_key = ""
     service_region = "westeurope"
     speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
     speech_config.speech_recognition_language = "en-US"
@@ -87,14 +86,14 @@ def get_ai_response(prompt):
             }
         }
         
-        # Send the request to the Hugging Face API
+        # hugging face api
         response = requests.post(API_URL, headers=headers, json=payload)
         response_text = response.json()[0]['generated_text']
 
         # Extract only JARVIS's response
         assistant_response = response_text.split("JARVIS:")[-1].strip()
 
-        # Only force "I suggest" for suggestions, allow natural responses otherwise
+        # Only force "I suggest" for suggestions
         if assistant_response.lower().startswith(("you should", "try", "consider")):
             assistant_response = "I suggest " + assistant_response
 
@@ -128,7 +127,7 @@ def open_app(app_name):
     pyautogui.press('winleft')
     time.sleep(0.5)  # Wait for the Start menu to open
     pyautogui.write(app_name, interval=0.1)
-    time.sleep(0.5)  # Wait for the search results to populate
+    time.sleep(0.5)  # Wait for the search results
     pyautogui.press('enter')
 
 def main():
@@ -136,7 +135,7 @@ def main():
     print("Jarvis is running in the background...")
     while True:
         try:
-            # If not active, listen for a wake word
+            # listen for a wake word
             if not active:
                 audio_text = listen_for_audio("Listening for wake word...")
                 if contains_wake_word(audio_text):
@@ -144,23 +143,23 @@ def main():
                     speak_with_jarvis_voice("Yes?")
                     print("Activated")
             else:
-                # When active, process user commands.
+                # active, process user commands.
                 user_input = listen_for_audio("Listening for command...")
                 if not user_input:
                     continue
 
                 print(f"You said: {user_input}")
 
-                # Check for deactivation
+                # Check deactivation
                 if contains_bye_word(user_input):
                     speak_with_jarvis_voice("Alright, going quiet. Call me when you need me.")
                     print("Deactivated")
                     active = False
                     continue
 
-                # Check for "open" command to launch an application
+                # Check "open" command to launch an app
                 if user_input.lower().startswith("open "):
-                    # Extract the app name and execute the open_app function
+                    # Extractapp name and execute open_app function
                     app_name = user_input[5:].strip()
                     speak_with_jarvis_voice(f"Opening {app_name}.")
                     print(f"Opening {app_name}.")
